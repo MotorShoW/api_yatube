@@ -1,7 +1,8 @@
+from posts.models import Group, Post, User
 from rest_framework import viewsets
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
-from posts.models import Group, Post, User
+
 from .permissions import IsAuthorOrReadOnly
 from .serializers import (CommentSerializer, GroupSerializer, PostSerializer,
                           UserSerializer)
@@ -17,12 +18,6 @@ class PostViewSet(viewsets.ModelViewSet):
     serializer_class = PostSerializer
     permission_classes = [IsAuthenticated, IsAuthorOrReadOnly]
 
-    def perform_update(self, serializer):
-        serializer.save(author=self.request.user)
-
-    def perform_destroy(self, serializer):
-        serializer.delete()
-
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
@@ -34,13 +29,6 @@ class CommentViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         post = get_object_or_404(Post, pk=self.kwargs.get('post_id'))
         return post.comments.all()
-
-    def perform_update(self, serializer):
-        post = get_object_or_404(Post, pk=self.kwargs.get('post_id'))
-        serializer.save(author=self.request.user, post=post)
-
-    def perform_destroy(self, serializer):
-        serializer.delete()
 
     def perform_create(self, serializer):
         post = get_object_or_404(Post, pk=self.kwargs.get('post_id'))
